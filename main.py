@@ -46,7 +46,7 @@ with open('system_prompt', 'r') as f:
 agent = create_agent(
     model=llm,
     tools=[search_tool, url_content, change_your_behavior_tool, add_an_instruction_to_yourself,
-           read_your_code_base],
+           read_your_code_base, create_a_file,write_a_lines_in_a_file,read_a_file],
     middleware=[handle_tool_errors],
     system_prompt=CONTEXT,
     checkpointer=checkpointer
