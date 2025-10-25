@@ -1,9 +1,9 @@
 from langchain.agents import create_agent
-from langchain.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain.agents.middleware import wrap_tool_call
 from langchain_core.messages import ToolMessage
+import os
 
 from src.search import *
 from src.tools import *
@@ -40,12 +40,13 @@ async def handle_tool_errors(request, handler):
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite")
 
-with open('src/system_prompt', 'r') as f:
+with open('system_prompt', 'r') as f:
     CONTEXT = f.read().strip()
 
 agent = create_agent(
     model=llm,
-    tools=[search_tool, url_content, change_your_behavior_tool, add_an_instruction_to_yourself],
+    tools=[search_tool, url_content, change_your_behavior_tool, add_an_instruction_to_yourself,
+           read_your_code_base],
     middleware=[handle_tool_errors],
     system_prompt=CONTEXT,
     checkpointer=checkpointer
