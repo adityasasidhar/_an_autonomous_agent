@@ -3,115 +3,94 @@ from pathlib import Path
 import os
 
 @tool
-def change_your_behavior_tool(instruction: str):
+def set_system_prompt(prompt: str):
     """
-    A tool that allows you to change your behavior based on you altering your system prompt instructions.
-
+    Replace the system prompt with the given prompt text.
     Args:
-        instruction: A string containing the new behavior instructions for the AI.
-
+        prompt: The new system prompt text.
     Returns:
-        A confirmation message indicating the behavior has been changed.
+        Confirmation message.
     """
-
     with open('src/system_prompt', 'w') as f:
-        f.write(instruction)
-        print(f"change_your_behavior_tool() utilised : {instruction}")
+        f.write(prompt)
+    return "System prompt updated."
 
 @tool
-def add_an_instruction_to_yourself(instruction: str) -> str:
+def add_system_instruction(instruction: str) -> str:
     """
-    A tool that allows you to add an instruction to your existing system prompt instructions.
-
+    Add an instruction to the end of the system prompt.
     Args:
-        instruction: A string containing the instruction to be added to the AI's behavior.
-
+        instruction: The instruction to add.
     Returns:
-        A confirmation message indicating the instruction has been added.
+        Confirmation message.
     """
-
     with open('src/system_prompt', 'a') as f:
         f.write("\n" + instruction)
-        print(f"add_an_instruction_to_yourself() utilised : {instruction}")
+    return "Instruction added to system prompt."
 
 @tool
-def read_your_code_base():
+def get_codebase_files():
     """
-    Reads the contents of the present codebase, where the logic and system functions are defined
-    and returns the code for a better understanding of how the agent functions.
-
+    Get the contents of key codebase files for review.
     Returns:
-        The code of the agent and logic
+        List of file contents.
     """
-    file_paths = ['src/tools.py', 'src/search.py', 'src/system_prompt', 'app.py']
-    file_contents = []
+    file_paths = ['src/tools.py', 'src/search.py', 'src/system_prompt', 'app.py', 'main.py']
+    files = []
     for file_path in file_paths:
         file_path_obj = Path(file_path)
         if file_path_obj.exists() and file_path_obj.is_file():
             with open(file_path, 'r') as f:
-                file_contents.append(file_path + f.read().strip())
-        else:
-            print(f"warning not a file or not found: {file_path}")
-    return file_contents
+                files.append(file_path + f.read().strip())
+    return files
 
 @tool
-def create_a_file(file_name : str, path : str):
+def create_file(name: str, folder: str):
     """
-    Creates a new file at the specified path with the given filename.
-
+    Create a new file in the given folder.
     Args:
-        file_name: Name of the file to create (e.g., 'example.txt')
-        path: Directory path where the file should be created (e.g., '/home/user/documents')
-
+        name: File name.
+        folder: Folder path.
     Returns:
-        str: Success message with the full file path
-
-    Raises:
-        FileExistsError: If the file already exists
-        PermissionError: If there are insufficient permissions
-        OSError: For other OS-related errors
+        Success message with file path.
     """
-    if not os.path.exists(path):
-        os.makedirs(path, exist_ok=True)
-
-    full_path = os.path.join(path, file_name)
-
+    if not os.path.exists(folder):
+        os.makedirs(folder, exist_ok=True)
+    full_path = os.path.join(folder, name)
     if os.path.exists(full_path):
         raise FileExistsError(f"File already exists: {full_path}")
-
     with open(full_path, 'w') as f:
         pass
-
-    return f"File created successfully: {full_path}"
-
-@tool
-def write_a_lines_in_a_file(filepath : str, line_start : int, line_end: int, text: str):
-  """Writes a block of text to a file, starting at a specified line number.
-
-  Args:
-    filepath: The path to the file to write to.
-    line_start: The line number in the file where the writing should start (1-based
-index).
-    line_end: The line number in the file where the writing should end (1-based index).
-    text: The text to write.
-  """
-  try:
-    with open(filepath, "a") as f:  # Use "a" to append to the file
-      for i in range(line_start, line_end):
-        f.write(text + "\n")
-  except FileNotFoundError:
-    print(f"File not found: {filepath}")
-  except Exception as e:
-    print(f"An error occurred: {e}")
+    return f"File created: {full_path}"
 
 @tool
-def read_a_file(filepath : str):
+def add_lines_to_file(path: str, start_line: int, end_line: int, content: str):
     """
-    Reads a file at the specified path and returns the contents.
+    Add lines of text to a file from start_line to end_line (1-based, inclusive start, exclusive end).
     Args:
-        filepath: The path to the file to read.
-    Returns:
-        The contents of the file.
+        path: File path.
+        start_line: Start line number.
+        end_line: End line number.
+        content: Text to add.
     """
-    with open(filepath, 'r') as f:
+    try:
+        with open(path, "a") as f:
+            for _ in range(start_line, end_line):
+                f.write(content + "\n")
+    except FileNotFoundError:
+        return f"File not found: {path}"
+    except Exception as e:
+        return f"Error: {e}"
+    return "Lines added."
+
+@tool
+def read_file(path: str):
+    """
+    Read and return the contents of a file.
+    Args:
+        path: File path.
+    Returns:
+        File contents.
+    """
+    with open(path, 'r') as f:
         return f.read()

@@ -5,17 +5,16 @@ from langchain.tools import tool
 from crawl4ai import AsyncWebCrawler
 
 @tool
-async def search_tool(query: str, number_of_search_results: int = 3):
+async def web_search(query: str, limit: int = 3):
     """
-    Performs a DuckDuckGo search, fetches webpage content for each result,
-    and returns summarized markdown snippets.
+    Search DuckDuckGo and return summaries of the top results.
 
     Args:
-        query: Search query string.
-        number_of_search_results: Number of results to retrieve (default 3).
+        query: Search query.
+        limit: Max number of results.
 
     Returns:
-        A combined markdown text containing title, URL, and content snippet for each result.
+        Markdown summary of results.
     """
     print(f"🔍 Searching DuckDuckGo (HTML) for: '{query}'")
     url = "https://html.duckduckgo.com/html/"
@@ -29,7 +28,7 @@ async def search_tool(query: str, number_of_search_results: int = 3):
         soup = BeautifulSoup(resp.text, "html.parser")
 
         results = []
-        for link in soup.select(".result__a")[:number_of_search_results]:
+        for link in soup.select(".result__a")[:limit]:
             title = link.get_text(strip=True)
             href = link.get("href")
             results.append({"title": title, "href": href})
@@ -64,18 +63,16 @@ async def search_tool(query: str, number_of_search_results: int = 3):
 
 
 @tool
-async def url_content(url: str) -> str:
+async def get_url_content(url: str) -> str:
     """
-    Fetches and returns the markdown content from a given URL.
+    Fetch and return markdown content from a URL.
 
     Args:
-        url: The URL of the webpage to fetch content from.
+        url: The URL to fetch.
 
     Returns:
-        The markdown-formatted content of the webpage.
+        Markdown content.
     """
     async with AsyncWebCrawler() as crawler:
-        result = await crawler.arun(
-            url=url,
-        )
+        result = await crawler.arun(url=url)
         return result.markdown

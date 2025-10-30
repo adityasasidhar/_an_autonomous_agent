@@ -68,7 +68,6 @@ agent = create_agent(
     checkpointer=checkpointer,
 )
 
-wa
 async def main():
     thread_id = "conversation_1"
 
