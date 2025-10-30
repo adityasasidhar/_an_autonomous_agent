@@ -22,9 +22,7 @@ def set_gemini_api_key():
         print("Please make sure the file exists and contains your API key.")
         exit(1)
 
-
 set_gemini_api_key()
-
 
 @wrap_tool_call
 async def handle_tool_errors(request, handler):
@@ -54,14 +52,16 @@ with open("system_prompt", "r") as f:
 agent = create_agent(
     model=llm,
     tools=[
-        search_tool,
-        url_content,
-        change_your_behavior_tool,
-        add_an_instruction_to_yourself,
-        read_your_code_base,
-        create_a_file,
-        write_a_lines_in_a_file,
-        read_a_file,
+        set_system_prompt,
+        add_system_instruction,
+        create_file,
+        get_codebase_files,
+        add_lines_to_file,
+        read_file,
+        web_search,
+        get_url_content,
+        search_memories,
+        save_memory
     ],
     middleware=[handle_tool_errors],
     system_prompt=CONTEXT,

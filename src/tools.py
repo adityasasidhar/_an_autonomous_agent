@@ -1,6 +1,14 @@
 from langchain.tools import tool
 from pathlib import Path
+import chromadb
 import os
+import hashlib
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+import asyncio
+
+chroma_client = chromadb.PersistentClient(path="memories")
+collection = chroma_client.get_or_create_collection(name="my_collection")
 
 @tool
 def set_system_prompt(prompt: str):
@@ -11,7 +19,7 @@ def set_system_prompt(prompt: str):
     Returns:
         Confirmation message.
     """
-    with open('src/system_prompt', 'w') as f:
+    with open('system_prompt', 'w') as f:
         f.write(prompt)
     return "System prompt updated."
 
@@ -24,7 +32,7 @@ def add_system_instruction(instruction: str) -> str:
     Returns:
         Confirmation message.
     """
-    with open('src/system_prompt', 'a') as f:
+    with open('system_prompt', 'a') as f:
         f.write("\n" + instruction)
     return "Instruction added to system prompt."
 
@@ -35,7 +43,7 @@ def get_codebase_files():
     Returns:
         List of file contents.
     """
-    file_paths = ['src/tools.py', 'src/search.py', 'src/system_prompt', 'app.py', 'main.py']
+    file_paths = ['src/tools.py', 'src/search.py', 'system_prompt', 'app.py', 'main.py']
     files = []
     for file_path in file_paths:
         file_path_obj = Path(file_path)
@@ -94,3 +102,80 @@ def read_file(path: str):
     """
     with open(path, 'r') as f:
         return f.read()
+
+@tool
+def save_memory(
+    content: str,
+    memory_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    overwrite: bool = True
+) -> Dict[str, Any]:
+    """
+    Save or upsert a memory into the collection.
+
+    Returns a dict with keys: 'id', 'status', and optionally 'message'.
+    """
+    if not content:
+        return {"status": "error", "message": "Empty content not allowed."}
+
+    # deterministic id if not provided
+    mem_id = memory_id or hashlib.md5(content.encode("utf-8")).hexdigest()
+    metadata = metadata or {}
+    metadata.setdefault("timestamp", datetime.utcnow().isoformat())
+
+    try:
+        # if overwrite is False, check existence first
+        if not overwrite:
+            existing = collection.get(ids=[mem_id])
+            if existing and existing.get("ids"):
+                return {"id": mem_id, "status": "skipped", "message": "Memory already exists."}
+
+        collection.upsert(
+            ids=[mem_id],
+            documents=[content],
+            metadatas=[metadata],
+        )
+        return {"id": mem_id, "status": "ok"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@tool
+def search_memories(
+    query: str,
+    top_k: int = 3,
+    include_metadata: bool = True,
+    min_distance: Optional[float] = None
+) -> List[Dict[str, Any]]:
+    """
+    Query the collection and return a list of results:
+    Each result is a dict with keys: 'id', 'document', 'metadata' (optional), 'distance' (if available).
+    """
+    if not query:
+        return []
+
+    try:
+        results = collection.query(query_texts=[query], n_results=top_k)
+        ids = results.get("ids", [[]])[0]
+        documents = results.get("documents", [[]])[0]
+        metadatas = results.get("metadatas", [[]])[0] if include_metadata else [None] * len(ids)
+        distances = results.get("distances", [[]])[0] if "distances" in results else [None] * len(ids)
+
+        normalized: List[Dict[str, Any]] = []
+        for i, _id in enumerate(ids):
+            distance = distances[i] if i < len(distances) else None
+            if min_distance is not None and distance is not None and distance > min_distance:
+                continue
+            normalized.append({
+                "id": _id,
+                "document": documents[i] if i < len(documents) else None,
+                "metadata": metadatas[i] if include_metadata and i < len(metadatas) else None,
+                "distance": distance,
+            })
+        return normalized
+    except Exception:
+        return []
+
+
+
+
