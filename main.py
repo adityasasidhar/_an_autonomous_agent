@@ -41,7 +41,7 @@ async def handle_tool_errors(request, handler):
 
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash-lite",
+    model="gemini-2.5-flash",
     generation_config=GenerateContentConfig(
         thinking_config=ThinkingConfig(include_thoughts=True)
     ),

@@ -3,6 +3,7 @@ from pathlib import Path
 import chromadb
 import os
 import hashlib
+import requests
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 import asyncio
@@ -176,6 +177,29 @@ def search_memories(
     except Exception:
         return []
 
-
-
-
+@tool
+def get_current_location():
+    """
+    Returns the current location of the user.
+    Args: None
+    Returns: Geographical location of the user.
+    """
+    try:
+        response = requests.get("https://ipinfo.io/json", timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        city = data.get("city")
+        region = data.get("region")
+        country = data.get("country")
+        if city:
+            parts = [p for p in (city, region, country) if p]
+            return ", ".join(parts)
+        if region:
+            parts = [p for p in (region, country) if p]
+            return ", ".join(parts)
+        loc = data.get("loc")
+        if loc:
+            return loc
+        return None
+    except Exception:
+        return None
