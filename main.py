@@ -11,7 +11,6 @@ from src.tools import *
 
 checkpointer = InMemorySaver()
 
-
 def set_gemini_api_key():
     try:
         with open("gemini_api_key.txt", "r") as f:
@@ -41,7 +40,7 @@ async def handle_tool_errors(request, handler):
 
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash-lite",
+    model="gemini-2.5-flash",
     generation_config=GenerateContentConfig(
         thinking_config=ThinkingConfig(include_thoughts=True)
     ),
@@ -61,7 +60,10 @@ agent = create_agent(
         web_search,
         get_url_content,
         search_memories,
-        save_memory
+        save_memory,
+        get_current_location,
+        calculator,
+        exec_python
     ],
     middleware=[handle_tool_errors],
     system_prompt=CONTEXT,
@@ -97,13 +99,13 @@ async def main():
             # Print ALL content types, not just 'text'
             for item in last_message.content:
                 if item.get("type") == "text":
-                    print(f"\n [Text]: {item['text']}")
+                    print(f"\n[Text]: {item['text']}")
                 elif item.get("type") == "thinking":
-                    print(f"\n [Thinking]: {item.get('text', item)}")
+                    print(f"\n[Thinking]: {item.get('text', item)}")
                 else:
                     print(f"\n[{item.get('type', 'unknown')}]: {item}")
         else:
-            print(f"\n📝 [Response]: {last_message.content}")
+            print(f"\n[Response]: {last_message.content}")
 
 
 if __name__ == "__main__":
