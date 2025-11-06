@@ -4,12 +4,16 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langchain.agents.middleware import wrap_tool_call
 from langchain_core.messages import ToolMessage
 from google.genai.types import GenerateContentConfig, ThinkingConfig
-import os
-
 from src.search import *
 from src.tools import *
+import chromadb
 
 checkpointer = InMemorySaver()
+
+if os.path.exists("memories"):
+    print("Loading existing memory...")
+else:
+    client = chromadb.PersistentClient(path="memories")
 
 def set_gemini_api_key():
     try:
@@ -41,9 +45,11 @@ async def handle_tool_errors(request, handler):
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
-    generation_config=GenerateContentConfig(
-        thinking_config=ThinkingConfig(include_thoughts=True)
-    ),
+    model_kwargs={
+        "generation_config": GenerateContentConfig(
+            thinking_config=ThinkingConfig(include_thoughts=True)
+        )
+    }
 )
 with open("system_prompt", "r") as f:
     CONTEXT = f.read().strip()
