@@ -6,6 +6,7 @@ from langchain_core.messages import ToolMessage
 from google.genai.types import GenerateContentConfig, ThinkingConfig
 from src.search import *
 from src.tools import *
+import asyncio
 import chromadb
 
 checkpointer = InMemorySaver()
@@ -31,11 +32,7 @@ set_gemini_api_key()
 async def handle_tool_errors(request, handler):
     """Handle tool execution errors with custom messages (async version)."""
     try:
-        # If handler is async, await it
-        result = handler(request)
-        if asyncio.iscoroutine(result):
-            return await result
-        return result
+        return await handler(request)
     except Exception as e:
         return ToolMessage(
             content=f"Tool error: Please check your input and try again. ({str(e)})",
@@ -44,7 +41,7 @@ async def handle_tool_errors(request, handler):
 
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-2.5-pro",
     model_kwargs={
         "generation_config": GenerateContentConfig(
             thinking_config=ThinkingConfig(include_thoughts=True)
