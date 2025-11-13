@@ -168,7 +168,6 @@ def search_memories(
         documents = results.get("documents", [[]])[0]
         metadatas = results.get("metadatas", [[]])[0] if include_metadata else [None] * len(ids)
         distances = results.get("distances", [[]])[0] if "distances" in results else [None] * len(ids)
-
         normalized: List[Dict[str, Any]] = []
         for i, _id in enumerate(ids):
             distance = distances[i] if i < len(distances) else None

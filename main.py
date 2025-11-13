@@ -21,6 +21,7 @@ def set_gemini_api_key():
         with open("gemini_api_key.txt", "r") as f:
             api_key = f.read().strip()
             os.environ["GOOGLE_API_KEY"] = api_key
+            print("API key set successfully.")
     except FileNotFoundError:
         print("API key file 'gemini_api_key.txt' not found.")
         print("Please make sure the file exists and contains your API key.")
