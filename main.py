@@ -115,6 +115,23 @@ async def main():
         else:
             print(f"\n[Response]: {last_message.content}")
 
+        # --- Reflector Step ---
+        print("\n--- Reflector ---")
+        reflector_prompt = f"""
+        You are a Reflector. Your job is to evaluate the performance of an AI assistant.
+        
+        User Input: {user_input}
+        Assistant Response: {last_message.content}
+        
+        Critique the response. Did it answer the user's intent? Was it safe? Did it follow instructions?
+        If the response was perfect, just say "Good".
+        If there is room for improvement, provide a concise critique.
+        """
+        
+        reflection = await llm.ainvoke(reflector_prompt)
+        print(f"[Critique]: {reflection.content}")
+        # ---------------------
+
 
 if __name__ == "__main__":
     asyncio.run(main())
