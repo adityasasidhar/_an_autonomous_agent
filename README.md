@@ -1,88 +1,77 @@
-# Autonomous Agent Experiment: Self-Evolving System Prompt
+# Autonomous Self-Improving Agent (ACE Framework)
 
-This repository contains an experimental research project that explores an autonomous agent built with a Large Language Model (LLM) which can analyze and suggest modifications to its own system prompt. The goal is to study self-modification, emergent behaviors, and safety/monitoring practices in AI systems.
+> **Experiment based on "Agentic Context Engineering"**
 
-> NOTE: This is an experimental research project. Do not run this in production or trust its behavior without thorough review and safeguards.
+This project implements an autonomous AI agent capable of **self-improvement** by evolving its own system prompt (context) rather than fine-tuning weights. This approach is inspired by the research concept that "Fine-tuning is Dead" (in favor of dynamic context engineering).
 
----
+## 🧠 Core Concept: Agentic Context Engineering (ACE)
 
-## Quick start
+The agent operates on a loop designed to continuously refine its behavior:
 
-Prerequisites
-- Python 3.10+ (the project was developed with Python 3.11)
-- pip
+1.  **Generator**: The main agent that performs tasks, answers questions, and executes tools.
+2.  **Reflector**: A critique step that evaluates the Generator's output for quality, safety, and adherence to instructions.
+3.  **Curator** (Planned): A mechanism to update the `system_prompt` based on the Reflector's insights, permanently "learning" from the interaction.
 
-Install dependencies (recommended in a virtual environment):
+## ✨ Features
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+-   **Self-Reflection**: Every response is critiqued by a secondary LLM call to ensure high quality.
+-   **Persistent Memory**: Uses **ChromaDB** to store and retrieve long-term memories across sessions.
+-   **Tool Use**:
+    -   **Web Search**: Real-time information via DuckDuckGo (Async).
+    -   **File Management**: Read, write, and modify codebase files.
+    -   **Code Execution**: Safe execution of Python scripts.
+-   **Async Architecture**: Non-blocking I/O for smooth performance.
 
-Configuration
-- The repository expects an API key file for generator models at `gemini_api_key.txt` (this project also references other providers; check `requirements.txt` and source files in `src/` for details).
-- Do not commit secrets. Keep API keys outside version control.
+## 🚀 Quick Start
 
-Run the project
-- A minimal run entrypoint exists at `main.py`. To run locally:
+### Prerequisites
+
+-   Python 3.10+
+-   A Google Gemini API Key
+
+### Installation
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/adityasasidhar/_an_autonomous_agent.git
+    cd _an_autonomous_agent
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
+
+3.  **Setup API Key**:
+    Create a file named `gemini_api_key.txt` in the root directory and paste your API key:
+    ```text
+    YOUR_GEMINI_API_KEY
+    ```
+
+### Running the Agent
 
 ```bash
 python main.py
 ```
 
-Depending on your environment and available model providers (OpenAI, Google, Ollama, etc.), additional configuration may be required.
+Interact with the agent in the terminal. After each response, you will see a `--- Reflector ---` block showing the critique.
 
----
+## 📂 Project Structure
 
-## What this project does
+-   `main.py`: The entry point. Contains the main loop, agent initialization, and the **Reflector** logic.
+-   `src/tools.py`: Definitions of all tools (Memory, File I/O, Calculator, etc.).
+-   `src/search.py`: Asynchronous web search implementation using `crawl4ai` and `duckduckgo`.
+-   `system_prompt`: The "brain" of the agent. This file is dynamically readable and writable by the agent itself.
+-   `memories/`: Directory for ChromaDB persistence.
 
-- Implements an LLM-driven agent that can observe its behavior, propose changes to its system prompt, and (in the experiment) apply those changes under controlled conditions.
-- Logs and stores prompt edits and agent outputs for research and analysis.
-- Includes tooling in `src/` for instantiation, searching, and helper utilities.
+## 🔮 Future Roadmap
 
-This project is intended for research and exploration of AI self-improvement concepts and is not production-ready.
+-   [ ] **Implement Curator**: Automate the update of `system_prompt` based on Reflector critiques.
+-   [ ] **Multi-Turn Reflection**: Allow the agent to "think" and revise its answer *before* showing it to the user.
+-   [ ] **Skill Library**: Allow the agent to write and save reusable Python functions.
 
----
+## ⚠️ Disclaimer
 
-## Project layout
-
-- `main.py` — simple entrypoint to start the agent or demo logic.
-- `src/` — core code for the agent: `instantiation.py`, `search.py`, `tools.py`, and related modules.
-- `memories/` — local data used by the agent (vector DB files, sqlite DB for Chromadb, etc.).
-- `gemini_api_key.txt` — optional file containing a model API key (not committed).
-- `requirements.txt` — pinned dependencies used during development.
-
----
-
-## Development notes
-
-- Tests: None provided by default. If you add tests, follow standard pytest conventions and add a `tests/` folder.
-- Linting / formatting: Use `black` / `ruff` if you want to apply formatting and linting.
-- When editing core behavior (prompt mutation, persistence, model calls), add extensive logging and review logs to ensure safe changes.
-
-Edge cases to watch for
-- Unintended prompt changes that produce unsafe or secret-exposing behavior.
-- Offline/limited model provider availability.
-- Data corruption in the `memories/` folder if concurrent writes happen.
-
----
-
-## Contributing
-
-This is mainly a personal research project. If you'd like to contribute:
-1. Open an issue to discuss proposed changes.
-2. Send a pull request with a clear description, tests (where applicable), and a short rationale for prompt-related changes.
-
----
-
-## License
-
-Add your preferred license here (e.g., MIT, Apache-2.0). If you want, tell me which license and I can add a LICENSE file.
-
----
-
-If you'd like, I can also:
-- Add a short example or demo script that runs the agent in a safe, read-only mode.
-- Create a CONTRIBUTING.md and a LICENSE file.
-- Add a minimal `requirements-dev.txt` for linters and test tools.
+This is an experimental research project. The agent has the capability to modify its own instructions and execute code. Run with caution and review the logs.
