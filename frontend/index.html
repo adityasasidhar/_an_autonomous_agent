@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Agent (ACE)</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ACE AGENT <span class="status">ONLINE</span></h1>
+            <div class="subtitle">Autonomous Context Engineering Framework</div>
+        </header>
+        
+        <main>
+            <div class="chat-panel">
+                <div class="panel-header">
+                    <span>LIVE INTERACTION</span>
+                    <div class="indicator"></div>
+                </div>
+                <div id="chat-history" class="chat-history">
+                    <div class="message system">
+                        <div class="content">System initialized. Memory loaded. Waiting for input...</div>
+                    </div>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="message-input" placeholder="Enter command or query..." autocomplete="off">
+                    <button id="send-btn">SEND</button>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <div class="reflector-panel">
+                    <div class="panel-header">
+                        <span>REFLECTOR CRITIQUE</span>
+                        <div class="indicator warning"></div>
+                    </div>
+                    <div id="reflector-log" class="log-content">
+                        <!-- Critiques will appear here -->
+                    </div>
+                </div>
+                
+                <div class="system-log-panel">
+                    <div class="panel-header">
+                        <span>SYSTEM LOGS</span>
+                    </div>
+                    <div id="system-log" class="log-content">
+                        <div class="log-entry">[INIT] WebSocket connected</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

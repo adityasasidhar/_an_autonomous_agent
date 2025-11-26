@@ -1,93 +1,40 @@
-from langchain.agents import create_agent
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langgraph.checkpoint.memory import InMemorySaver
-from langchain.agents.middleware import wrap_tool_call
-from langchain_core.messages import ToolMessage
-from google.genai.types import GenerateContentConfig, ThinkingConfig
-from src.search import *
-from src.tools import *
 import asyncio
-import chromadb
+import os
+from datetime import datetime
+from src.agent_logic import initialize_agent, run_reflector, retrieve_context, manage_memory
 
-checkpointer = InMemorySaver()
+def log_interaction(role: str, content: str):
+    """Log interaction to a file."""
+    if not os.path.exists("logs"):
+        os.makedirs("logs")
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("logs/interactions.log", "a", encoding="utf-8") as f:
+        f.write(f"[{timestamp}] [{role}]\n{content}\n{'-'*40}\n")
 
-if os.path.exists("memories"):
-    print("Loading existing memory...")
-
-def set_gemini_api_key():
-    try:
-        with open("gemini_api_key.txt", "r") as f:
-            api_key = f.read().strip()
-            os.environ["GOOGLE_API_KEY"] = api_key
-            print("API key set successfully.")
-    except FileNotFoundError:
-        print("API key file 'gemini_api_key.txt' not found.")
-        print("Please make sure the file exists and contains your API key.")
-        exit(1)
-
-set_gemini_api_key()
-
-@wrap_tool_call
-async def handle_tool_errors(request, handler):
-    """Handle tool execution errors with custom messages (async version)."""
-    try:
-        return await handler(request)
-    except Exception as e:
-        return ToolMessage(
-            content=f"Tool error: Please check your input and try again. ({str(e)})",
-            tool_call_id=request.tool_call["id"],
-        )
-
-
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
-    # model_kwargs={
-    #     "generation_config": GenerateContentConfig(
-    #         thinking_config=ThinkingConfig(include_thoughts=True)
-    #     )
-    # }
-)
-
-# llm = ChatOllama(
-#     model="gpt-oss:20b",
-#     reasoning=True,
-#     temperature=0.9,
-# )
-with open("system_prompt", "r") as f:
-    CONTEXT = f.read().strip()
-
-agent = create_agent(
-    model=llm,
-    tools=[
-        set_system_prompt,
-        add_system_instruction,
-        create_file,
-        get_codebase_files,
-        add_lines_to_file,
-        read_file,
-        web_search,
-        get_url_content,
-        search_memories,
-        save_memory,
-        get_current_location,
-        calculator,
-        exec_python
-    ],
-    middleware=[handle_tool_errors],
-    system_prompt=CONTEXT,
-    checkpointer=checkpointer,
-)
+# Initialize Agent
+agent, llm = initialize_agent()
 
 async def main():
     thread_id = "conversation_1"
 
     while True:
         user_input = await asyncio.to_thread(input, "\nYou: ")
+        log_interaction("USER", user_input)
         if user_input.lower() in ["exit", "quit", "q"]:
             break
+        
+        # 0. Retrieve Context (RAG)
+        context = retrieve_context(user_input)
+        if context:
+            print(f"\n[Context]: {context.strip()}")
+            full_input = f"{context}\n\nUser Query: {user_input}"
+        else:
+            full_input = user_input
 
+        # 1. Get Agent Response
         response = await agent.ainvoke(
-            {"messages": [("user", user_input)]},
+            {"messages": [("user", full_input)]},
             config={"configurable": {"thread_id": thread_id}},
         )
 
@@ -114,22 +61,17 @@ async def main():
                     print(f"\n[{item.get('type', 'unknown')}]: {item}")
         else:
             print(f"\n[Response]: {last_message.content}")
+            log_interaction("AGENT", last_message.content)
 
         # --- Reflector Step ---
         print("\n--- Reflector ---")
-        reflector_prompt = f"""
-        You are a Reflector. Your job is to evaluate the performance of an AI assistant.
+        critique = await run_reflector(user_input, last_message.content, llm)
+        print(f"[Critique]: {critique}")
+        log_interaction("REFLECTOR", critique)
         
-        User Input: {user_input}
-        Assistant Response: {last_message.content}
-        
-        Critique the response. Did it answer the user's intent? Was it safe? Did it follow instructions?
-        If the response was perfect, just say "Good".
-        If there is room for improvement, provide a concise critique.
-        """
-        
-        reflection = await llm.ainvoke(reflector_prompt)
-        print(f"[Critique]: {reflection.content}")
+        # 3. Manage Memory (Auto-Save)
+        memory_status = await manage_memory(user_input, last_message.content, critique, llm)
+        print(f"[Memory]: {memory_status}")
         # ---------------------
 
 
