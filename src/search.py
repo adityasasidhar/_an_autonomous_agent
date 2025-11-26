@@ -23,7 +23,7 @@ async def web_search(query: str, limit: int = 3):
 
     try:
         # Step 1: Perform DuckDuckGo search
-        resp = requests.post(url, data=params, headers=headers, timeout=10)
+        resp = await asyncio.to_thread(requests.post, url, data=params, headers=headers, timeout=10)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 

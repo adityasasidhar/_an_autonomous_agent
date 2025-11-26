@@ -13,8 +13,6 @@ checkpointer = InMemorySaver()
 
 if os.path.exists("memories"):
     print("Loading existing memory...")
-else:
-    client = chromadb.PersistentClient(path="memories")
 
 def set_gemini_api_key():
     try:
@@ -42,13 +40,19 @@ async def handle_tool_errors(request, handler):
 
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-pro",
+    model="gemini-3-pro-preview",
     model_kwargs={
         "generation_config": GenerateContentConfig(
             thinking_config=ThinkingConfig(include_thoughts=True)
         )
     }
 )
+
+# llm = ChatOllama(
+#     model="gpt-oss:20b",
+#     reasoning=True,
+#     temperature=0.9,
+# )
 with open("system_prompt", "r") as f:
     CONTEXT = f.read().strip()
 
@@ -78,7 +82,7 @@ async def main():
     thread_id = "conversation_1"
 
     while True:
-        user_input = input("\nYou: ")
+        user_input = await asyncio.to_thread(input, "\nYou: ")
         if user_input.lower() in ["exit", "quit", "q"]:
             break
 

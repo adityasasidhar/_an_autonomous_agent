@@ -14,7 +14,7 @@ import tempfile
 import sys
 import textwrap
 
-chroma_client = chromadb.PersistentClient(path="../memories")
+chroma_client = chromadb.PersistentClient(path="memories")
 collection = chroma_client.get_or_create_collection(name="my_collection")
 
 @tool

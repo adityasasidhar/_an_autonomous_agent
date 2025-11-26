@@ -1,3 +1,10 @@
 gemini_api_key.txt
 src/__pycache__/
 memories
+.venv
+src/__pycache__
+Autonomous_agent_engineering_and_paper.md
+.idea
+.cadence
+__pycache__
+try.py
