@@ -40,12 +40,12 @@ async def handle_tool_errors(request, handler):
 
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-3-pro-preview",
-    model_kwargs={
-        "generation_config": GenerateContentConfig(
-            thinking_config=ThinkingConfig(include_thoughts=True)
-        )
-    }
+    model="gemini-2.5-flash",
+    # model_kwargs={
+    #     "generation_config": GenerateContentConfig(
+    #         thinking_config=ThinkingConfig(include_thoughts=True)
+    #     )
+    # }
 )
 
 # llm = ChatOllama(
