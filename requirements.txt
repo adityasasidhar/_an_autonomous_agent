@@ -8,3 +8,6 @@ langchain-google-genai~=3.0.0
 langgraph~=1.0.1
 langchain-core~=1.0.0
 protobuf~=6.33.0
+fastapi
+uvicorn
+bcrypt

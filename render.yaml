@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: autonomous-agent
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port 10000
+    disk:
+      name: memories
+      mountPath: /opt/render/project/src/memories
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: CHROMA_DB_PATH
+        value: /opt/render/project/src/memories

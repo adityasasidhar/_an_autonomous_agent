@@ -10,7 +10,22 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-box">
+            <h2>ACCESS CONTROL</h2>
+            <div class="input-group">
+                <label>IDENTITY</label>
+                <input type="text" id="username-input" placeholder="Username">
+            </div>
+            <div class="input-group">
+                <label>KEY</label>
+                <input type="password" id="password-input" placeholder="Password">
+            </div>
+            <button id="login-btn">AUTHENTICATE</button>
+            <div id="login-message" class="login-message"></div>
+        </div>
+    </div>
+    <div class="container" id="main-container" style="filter: blur(5px); pointer-events: none;">
         <header>
             <h1>ACE AGENT <span class="status">ONLINE</span></h1>
             <div class="subtitle">Autonomous Context Engineering Framework</div>

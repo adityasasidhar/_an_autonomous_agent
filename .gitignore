@@ -8,3 +8,5 @@ Autonomous_agent_engineering_and_paper.md
 .cadence
 __pycache__
 try.py
+logs/
+*.log

@@ -14,7 +14,8 @@ import tempfile
 import sys
 import textwrap
 
-chroma_client = chromadb.PersistentClient(path="memories")
+chroma_path = os.environ.get("CHROMA_DB_PATH", "memories")
+chroma_client = chromadb.PersistentClient(path=chroma_path)
 collection = chroma_client.get_or_create_collection(name="my_collection")
 
 @tool
@@ -113,6 +114,7 @@ def read_file(path: str):
 @tool
 def save_memory(
     content: str,
+    user_id: str = "default_user",
     memory_id: Optional[str] = None,
     metadata: Optional[Dict[str, Any]] = None,
     overwrite: bool = True
@@ -128,6 +130,7 @@ def save_memory(
     # deterministic id if not provided
     mem_id = memory_id or hashlib.md5(content.encode("utf-8")).hexdigest()
     metadata = metadata or {}
+    metadata["user_id"] = user_id
     # use timezone-aware UTC timestamp
     metadata.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
 
@@ -151,6 +154,7 @@ def save_memory(
 @tool
 def search_memories(
     query: str,
+    user_id: str = "default_user",
     top_k: int = 3,
     include_metadata: bool = True,
     min_distance: Optional[float] = None
@@ -163,7 +167,8 @@ def search_memories(
         return []
 
     try:
-        results = collection.query(query_texts=[query], n_results=top_k)
+        where_filter = {"user_id": user_id}
+        results = collection.query(query_texts=[query], n_results=top_k, where=where_filter)
         ids = results.get("ids", [[]])[0]
         documents = results.get("documents", [[]])[0]
         metadatas = results.get("metadatas", [[]])[0] if include_metadata else [None] * len(ids)
